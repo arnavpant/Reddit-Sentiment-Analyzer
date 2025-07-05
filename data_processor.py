@@ -1,0 +1,33 @@
+# Data cleaning, storage, and processing
+import re
+import sqlite3
+import pandas as pd
+
+def clean_text(text):
+    text = re.sub(r"http\S+", "", text)  # Remove URLs
+    text = re.sub(r"[^A-Za-z0-9\s]", "", text)  # Remove special chars
+    text = text.lower().strip()
+    return text
+
+def save_to_db(df, db_path='data/reddit_posts.db'):
+    conn = sqlite3.connect(db_path)
+    df.to_sql('posts', conn, if_exists='append', index=False)
+    conn.close()
+
+def setup_db(db_path='data/reddit_posts.db'):
+    conn = sqlite3.connect(db_path)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        topic TEXT,
+        subreddit TEXT,
+        title TEXT,
+        content TEXT,
+        sentiment_score REAL,
+        sentiment_label TEXT,
+        post_score INTEGER,
+        timestamp DATETIME,
+        post_id TEXT UNIQUE
+    );
+    """)
+    conn.close()
