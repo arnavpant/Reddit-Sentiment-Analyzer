@@ -20,8 +20,8 @@ def collect_posts(subreddit, query, limit=100):
             'title': post.title,
             'content': post.selftext,
             'subreddit': subreddit,
-            'score': post.score,
-            'num_comments': post.num_comments,
+            'score': getattr(post, 'score', 0),
+            'num_comments': getattr(post, 'num_comments', 0),
             'timestamp': pd.to_datetime(post.created_utc, unit='s')
         })
     return pd.DataFrame(posts)
