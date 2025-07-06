@@ -17,5 +17,11 @@ def run_pipeline(topic, subreddit, limit=100):
         df['score'] = 0
     df = df.rename(columns={'score': 'post_score'})
 
-    save_to_db(df[['topic', 'subreddit', 'title', 'content', 'sentiment_score', 'sentiment_label', 'score', 'timestamp', 'post_id']])
+    expected_columns = ['topic', 'subreddit', 'title', 'content',
+                    'sentiment_score', 'sentiment_label', 'post_score', 'timestamp', 'post_id']
+    for col in expected_columns:
+        if col not in df.columns:
+            df[col] = None  # or 0, or appropriate default
+
+    save_to_db(df[expected_columns])
     return df
