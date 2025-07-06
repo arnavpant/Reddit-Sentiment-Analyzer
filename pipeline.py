@@ -13,5 +13,7 @@ def run_pipeline(topic, subreddit, limit=100):
         lambda x: pd.Series(analyze_sentiment(x))
     )
     df['topic'] = topic
+    df = df.rename(columns={'score': 'post_score'})
+
     save_to_db(df[['topic', 'subreddit', 'title', 'content', 'sentiment_score', 'sentiment_label', 'score', 'timestamp', 'post_id']])
     return df
