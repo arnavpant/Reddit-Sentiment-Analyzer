@@ -1,4 +1,5 @@
 # Data cleaning, storage, and processing
+import os
 import re
 import sqlite3
 import pandas as pd
@@ -15,6 +16,7 @@ def save_to_db(df, db_path='data/reddit_posts.db'):
     conn.close()
 
 def setup_db(db_path='data/reddit_posts.db'):
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
     conn = sqlite3.connect(db_path)
     conn.execute("""
     CREATE TABLE IF NOT EXISTS posts (
