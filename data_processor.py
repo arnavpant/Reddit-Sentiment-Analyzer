@@ -33,3 +33,11 @@ def setup_db(db_path='data/reddit_posts.db'):
     );
     """)
     conn.close()
+
+def get_existing_post_ids(db_path='data/reddit_posts.db'):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT post_id FROM posts")
+    rows = cursor.fetchall()
+    conn.close()
+    return set(row[0] for row in rows)

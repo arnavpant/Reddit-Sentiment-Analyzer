@@ -1,5 +1,5 @@
 from reddit_scraper import collect_posts
-from data_processor import clean_text, save_to_db, setup_db
+from data_processor import clean_text, save_to_db, setup_db, get_existing_post_ids
 from sentiment_analyzer import analyze_sentiment
 import pandas as pd
 
@@ -23,5 +23,9 @@ def run_pipeline(topic, subreddit, limit=100):
         if col not in df.columns:
             df[col] = None  # or 0, or appropriate default
 
+    
+    existing_ids = get_existing_post_ids()
+    df = df[~df['post_id'].isin(existing_ids)]
+    
     save_to_db(df[expected_columns])
     return df
