@@ -4,6 +4,8 @@ import plotly.express as px
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from pipeline import run_pipeline
+import pandas as pd
+from datetime import datetime
 
 st.set_page_config(page_title="AI-Powered Sentiment Analysis", layout="wide")
 
@@ -67,11 +69,26 @@ if analyze_btn:
                     trend['smoothed'] = trend['sentiment_score'].rolling(window=3, min_periods=1, center=True).mean()
                 else:
                     trend['smoothed'] = trend['sentiment_score']
+                    
+                    
+                cutoff_date = pd.Timestamp(datetime.now().date()) - pd.Timedelta(weeks=2)
+                recent_trend = df[df['date'] >= cutoff_date]
+                
+                trend = recent_trend.groupby('date')['sentiment_score'].mean().reset_index()
+                
+                if len(trend) > 2:
+                    trend['smoothed'] = trend['sentiment_score'].rolling(window=3, min_periods=1, center=True).mean()
+                else:
+                    trend['smoothed'] = trend['sentiment_score']
+                    
+                    
+                    
+                    
                 fig_line = px.line(
                     trend,
                     x='date',
                     y='smoothed',
-                    title='Sentiment Trend Over Time',
+                    title='Sentiment Trend Over Last 2 Weeks',
                     markers=False
                 )
                 fig_line.update_traces(line_shape='spline')  # Smooth line
