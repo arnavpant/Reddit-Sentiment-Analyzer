@@ -1,11 +1,19 @@
 # pipeline.py
 
+import os
 from reddit_scraper import collect_posts_global
-from data_processor import clean_text, save_to_db, setup_db, get_existing_post_ids
+from data_processor import clean_text, save_to_db, setup_db
 from sentiment_analyzer import analyze_sentiment
 import pandas as pd
 
+DB_PATH = 'data/reddit_posts.db'
+
+def reset_database(db_path=DB_PATH):
+    if os.path.exists(db_path):
+        os.remove(db_path)
+
 def run_pipeline(topic, limit=100):
+    reset_database()       # Delete old DB before new search
     setup_db()
     df = collect_posts_global(topic, limit)
     if df.empty:
@@ -24,8 +32,5 @@ def run_pipeline(topic, limit=100):
     for col in expected_columns:
         if col not in df.columns:
             df[col] = None
-    existing_ids = get_existing_post_ids()
-    df = df[~df['post_id'].isin(existing_ids)]
     save_to_db(df[expected_columns])
     return df
-
