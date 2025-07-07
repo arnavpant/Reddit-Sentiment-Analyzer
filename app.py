@@ -5,6 +5,7 @@ import pandas as pd
 from pipeline import run_pipeline
 from utils import get_sentiment_feeling, get_sentiment_emoji
 from visualizations import plot_sentiment_pie, plot_sentiment_trend, plot_wordcloud, render_top_posts
+import os
 
 st.set_page_config(page_title="Social Movements Sentiment Analyzer", layout="wide")
 
@@ -51,16 +52,18 @@ st.title("AI-Powered Sentiment Analysis for Social Movements")
 
 with st.sidebar:
     st.header("Configure Analysis")
-    topic = st.text_input("Enter keywords or hashtags", value="climate change")
+    topic = st.text_input("Enter topic or hashtag", value="climate change")
+    subreddit = st.selectbox("Choose subreddit", ["politics", "news", "worldnews"])
     limit = st.slider("Number of posts to analyze", 10, 500, 100, step=10)
     analyze_btn = st.button("Analyze")
 
 if analyze_btn:
     with st.spinner("Collecting and analyzing posts..."):
-        df = run_pipeline(topic, limit)
+        df = run_pipeline(topic, subreddit, limit)
         if df.empty:
-            st.error("No posts found for your query. Try different keywords.")
+            st.error("No posts found for your query. Try a different topic or subreddit.")
         else:
+            # Summary Metrics
             total_posts = len(df)
             avg_sentiment = df['sentiment_score'].mean()
             avg_sentiment_display = f"{avg_sentiment:+.2f}"
@@ -98,14 +101,14 @@ if analyze_btn:
                 render_top_posts(df, sentiment_label="Negative")
 
             st.markdown("### All Posts")
-            st.dataframe(df[["title", "subreddit", "sentiment_label", "sentiment_score", "timestamp"]], use_container_width=True)
+            st.dataframe(df[["title", "sentiment_label", "sentiment_score", "timestamp"]], use_container_width=True)
 
             st.download_button(
                 label="Download Results as CSV",
                 data=df.to_csv(index=False).encode('utf-8'),
-                file_name=f"{topic}_sentiment.csv",
+                file_name=f"{topic}_{subreddit}_sentiment.csv",
                 mime="text/csv"
             )
 else:
-    st.info("Enter keywords and click Analyze to get started.")
+    st.info("Enter a topic and click Analyze to get started.")
 

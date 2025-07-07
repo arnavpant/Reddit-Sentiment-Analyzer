@@ -10,6 +10,7 @@ def analyze_sentiment(text):
     result = sentiment_pipeline(text[:512])[0]
     label = result['label']
     score = result['score'] if label == 'POSITIVE' else -result['score']
+    # Map to three-class system
     if score > 0.1:
         sentiment = 'Positive'
     elif score < -0.1:

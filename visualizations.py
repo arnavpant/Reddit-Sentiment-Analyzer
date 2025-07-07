@@ -26,6 +26,7 @@ def plot_sentiment_pie(df):
 
 def plot_sentiment_trend(df):
     df_sorted = df.sort_values("timestamp")
+    # Group by date for smoothness
     df_sorted['date'] = pd.to_datetime(df_sorted['timestamp']).dt.date
     trend = df_sorted.groupby('date')['sentiment_score'].mean().reset_index()
     fig = go.Figure()

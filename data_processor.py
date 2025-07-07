@@ -26,8 +26,7 @@ def setup_db(db_path='data/reddit_posts.db'):
         post_score INTEGER,
         timestamp DATETIME,
         post_id TEXT UNIQUE,
-        clean_content TEXT,
-        author TEXT
+        clean_content TEXT
     );
     """)
     conn.close()

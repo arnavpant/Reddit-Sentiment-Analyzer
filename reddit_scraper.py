@@ -11,10 +11,11 @@ def get_reddit_instance():
         user_agent=REDDIT_USER_AGENT
     )
 
-def collect_posts(query, limit=100):
+def collect_posts_global(query, limit=100):
     reddit = get_reddit_instance()
+    subreddit_obj = reddit.subreddit('all')  # Search across all subreddits
     posts = []
-    for post in reddit.subreddit("all").search(query, sort='relevance', time_filter='month', limit=limit):
+    for post in subreddit_obj.search(query, sort='relevance', time_filter='month', limit=limit):
         posts.append({
             'post_id': post.id,
             'title': post.title,
