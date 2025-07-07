@@ -99,7 +99,7 @@ if 'last_df' in st.session_state and st.session_state['last_df'] is not None and
         with col_wc:
             st.markdown('<div class="section-header">Word Cloud</div>', unsafe_allow_html=True)
             wc_img = plot_wordcloud(df)
-            st.image(wc_img, use_column_width=True)
+            st.image(wc_img, use_container_width=True)
         with col_pos:
             st.markdown('<div class="section-header">Top 10 Positive Posts</div>', unsafe_allow_html=True)
             render_top_posts(df, sentiment_label="Positive")

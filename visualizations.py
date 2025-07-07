@@ -54,12 +54,12 @@ def plot_wordcloud(df):
         stopwords=stopwords, collocations=False, colormap='tab20'
     ).generate(text)
     buf = BytesIO()
-    plt.figure(figsize=(8, 4))
-    plt.imshow(wc, interpolation='bilinear')
-    plt.axis('off')
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.imshow(wc, interpolation='bilinear')
+    ax.axis('off')
     plt.tight_layout(pad=0)
-    plt.savefig(buf, format='png')
-    plt.close()
+    fig.savefig(buf, format='png')
+    plt.close(fig)
     buf.seek(0)
     return buf
 

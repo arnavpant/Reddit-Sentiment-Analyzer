@@ -32,5 +32,7 @@ def run_pipeline(topic, limit=100):
     for col in expected_columns:
         if col not in df.columns:
             df[col] = None
+    df = df.drop_duplicates(subset='post_id')
+        
     save_to_db(df[expected_columns])
     return df
