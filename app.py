@@ -1,101 +1,114 @@
 # app.py
 
 import streamlit as st
-from pipeline import run_pipeline
-import plotly.express as px
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 import pandas as pd
+from pipeline import run_pipeline
+from utils import get_sentiment_feeling, get_sentiment_emoji
+from visualizations import plot_sentiment_pie, plot_sentiment_trend, plot_wordcloud, render_top_posts
+import os
 
-st.set_page_config(page_title="AI-Powered Sentiment Analysis", layout="wide")
+st.set_page_config(page_title="Social Movements Sentiment Analyzer", layout="wide")
 
-st.title("🧠 AI-Powered Sentiment Analysis for Social Movements")
 st.markdown(
     """
-    Analyze public sentiment on any topic or hashtag across Reddit in real time.<br>
-    <small>Track trends, visualize opinions, and discover the most positive and negative posts!</small>
+    <style>
+    .metric-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.2em 1em 1em 1em;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .section-header {
+        font-size: 1.3em;
+        font-weight: 700;
+        margin-top: 1.2em;
+        margin-bottom: .5em;
+    }
+    .post-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 0.8em 1em;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        transition: box-shadow 0.2s;
+    }
+    .post-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.09);
+    }
+    a {
+        color: #1a73e8;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    </style>
     """,
-    unsafe_allow_html=True,
+    unsafe_allow_html=True
 )
 
+st.title("AI-Powered Sentiment Analysis for Social Movements")
+
 with st.sidebar:
-    st.header("Controls")
-    topic = st.text_input("Enter topic or hashtag:", value="climate change")
-    subreddit = st.selectbox("Choose subreddit:", ["politics", "news", "worldnews"])
-    limit = st.slider("Number of posts to analyze:", 10, 500, 100)
-    analyze_btn = st.button("🔍 Analyze")
+    st.header("Configure Analysis")
+    topic = st.text_input("Enter topic or hashtag", value="climate change")
+    subreddit = st.selectbox("Choose subreddit", ["politics", "news", "worldnews"])
+    limit = st.slider("Number of posts to analyze", 10, 500, 100, step=10)
+    analyze_btn = st.button("Analyze")
 
 if analyze_btn:
     with st.spinner("Collecting and analyzing posts..."):
         df = run_pipeline(topic, subreddit, limit)
-        st.success(f"Collected and analyzed {len(df)} posts.")
+        if df.empty:
+            st.error("No posts found for your query. Try a different topic or subreddit.")
+        else:
+            # Summary Metrics
+            total_posts = len(df)
+            avg_sentiment = df['sentiment_score'].mean()
+            avg_sentiment_display = f"{avg_sentiment:+.2f}"
+            avg_sentiment_emoji = get_sentiment_emoji(avg_sentiment)
+            avg_sentiment_feeling = get_sentiment_feeling(avg_sentiment)
+            unique_users = df['author'].nunique() if 'author' in df.columns else "N/A"
 
-        # --- Summary Metrics ---
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Total Posts", len(df))
-        with col2:
-            avg_sent = df['sentiment_score'].mean()
-            st.metric("Avg. Sentiment Score", f"{avg_sent:.2f}")
-        with col3:
-            st.metric("Subreddit", subreddit)
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Posts", total_posts)
+            with col2:
+                st.metric("Average Sentiment", f"{avg_sentiment_display} {avg_sentiment_emoji}")
+                st.caption(avg_sentiment_feeling)
+            with col3:
+                st.metric("Unique Users", unique_users)
 
-        # --- Visualizations ---
-        st.subheader("Sentiment Dashboard")
-        col_a, col_b = st.columns([1, 1])
+            st.markdown('<div class="section-header">Sentiment Distribution</div>', unsafe_allow_html=True)
+            pie_fig = plot_sentiment_pie(df)
+            st.plotly_chart(pie_fig, use_container_width=True)
 
-        # Pie Chart: Sentiment Distribution
-        with col_a:
-            sentiment_counts = df['sentiment_label'].value_counts().reset_index()
-            sentiment_counts.columns = ['sentiment_label', 'count']
-            fig_pie = px.pie(
-                sentiment_counts,
-                names='sentiment_label',
-                values='count',
-                color='sentiment_label',
-                color_discrete_map={'Positive': 'green', 'Negative': 'red', 'Neutral': 'gray'},
-                title='Sentiment Distribution'
+            st.markdown('<div class="section-header">Sentiment Trend Over Time</div>', unsafe_allow_html=True)
+            trend_fig = plot_sentiment_trend(df)
+            st.plotly_chart(trend_fig, use_container_width=True)
+
+            col_wc, col_pos, col_neg = st.columns([2, 1.5, 1.5])
+            with col_wc:
+                st.markdown('<div class="section-header">Word Cloud</div>', unsafe_allow_html=True)
+                wc_img = plot_wordcloud(df)
+                st.image(wc_img, use_column_width=True)
+            with col_pos:
+                st.markdown('<div class="section-header">Top 10 Positive Posts</div>', unsafe_allow_html=True)
+                render_top_posts(df, sentiment_label="Positive")
+            with col_neg:
+                st.markdown('<div class="section-header">Top 10 Negative Posts</div>', unsafe_allow_html=True)
+                render_top_posts(df, sentiment_label="Negative")
+
+            st.markdown("### All Posts")
+            st.dataframe(df[["title", "sentiment_label", "sentiment_score", "timestamp"]], use_container_width=True)
+
+            st.download_button(
+                label="Download Results as CSV",
+                data=df.to_csv(index=False).encode('utf-8'),
+                file_name=f"{topic}_{subreddit}_sentiment.csv",
+                mime="text/csv"
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
-
-        # Line Chart: Sentiment Trend Over Time
-        with col_b:
-            df['date'] = pd.to_datetime(df['timestamp']).dt.date
-            trend = df.groupby('date')['sentiment_score'].mean().reset_index()
-            fig_line = px.line(
-                trend,
-                x='date',
-                y='sentiment_score',
-                markers=True,
-                title='Sentiment Trend Over Time'
-            )
-            st.plotly_chart(fig_line, use_container_width=True)
-
-        # --- Word Cloud ---
-        st.subheader("Word Cloud of Most Common Words")
-        text = ' '.join(df['clean_content'].dropna())
-        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
-        fig_wc, ax = plt.subplots(figsize=(10, 5))
-        ax.imshow(wordcloud, interpolation='bilinear')
-        ax.axis('off')
-        st.pyplot(fig_wc)
-
-        # --- Top Posts ---
-        st.subheader("Top Posts by Sentiment")
-        col_pos, col_neg = st.columns(2)
-        with col_pos:
-            st.markdown("#### Top 10 Most Positive Posts")
-            top_positive = df.sort_values('sentiment_score', ascending=False).head(10)[['title', 'sentiment_score']]
-            st.table(top_positive.rename(columns={'title': 'Title', 'sentiment_score': 'Score'}))
-        with col_neg:
-            st.markdown("#### Top 10 Most Negative Posts")
-            top_negative = df.sort_values('sentiment_score', ascending=True).head(10)[['title', 'sentiment_score']]
-            st.table(top_negative.rename(columns={'title': 'Title', 'sentiment_score': 'Score'}))
-
-        # --- Data Table (Expandable) ---
-        with st.expander("See All Analyzed Posts"):
-            st.dataframe(df[['title', 'sentiment_label', 'sentiment_score', 'subreddit', 'timestamp']])
-
 else:
-    st.info("Enter a topic and click **Analyze** to get started!")
+    st.info("Enter a topic and click Analyze to get started.")
 

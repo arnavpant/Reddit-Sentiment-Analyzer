@@ -1,4 +1,3 @@
-# Python dependencies
 streamlit
 praw
 pandas
@@ -6,4 +5,5 @@ transformers
 torch
 plotly
 wordcloud
+matplotlib
 python-dotenv
