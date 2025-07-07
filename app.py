@@ -85,25 +85,25 @@ if st.session_state.get('show_results', False):
         with col3:
             st.metric("Unique Users", unique_users)
 
-        st.markdown('<div class="section-header">Sentiment Distribution</div>', unsafe_allow_html=True)
-        pie_fig = plot_sentiment_pie(df)
-        st.plotly_chart(pie_fig, use_container_width=True)
+        col_pie, col_trend = st.columns(2)
+        with col_pie:
+            st.markdown('<div class="section-header">Sentiment Distribution</div>', unsafe_allow_html=True)
+            pie_fig = plot_sentiment_pie(df)
+            st.plotly_chart(pie_fig, use_container_width=True)
+        with col_trend:
+            st.markdown('<div class="section-header">Sentiment Trend Over Time</div>', unsafe_allow_html=True)
+            trend_fig = plot_sentiment_trend(df)
+            st.plotly_chart(trend_fig, use_container_width=True)
 
-        st.markdown('<div class="section-header">Sentiment Trend Over Time</div>', unsafe_allow_html=True)
-        trend_fig = plot_sentiment_trend(df)
-        st.plotly_chart(trend_fig, use_container_width=True)
 
-        col_wc, col_pos, col_neg = st.columns([2, 1.5, 1.5])
-        with col_wc:
-            st.markdown('<div class="section-header">Word Cloud</div>', unsafe_allow_html=True)
-            wc_img = plot_wordcloud(df)
-            st.image(wc_img, use_container_width=True)
-        with col_pos:
-            st.markdown('<div class="section-header">Top 10 Positive Posts</div>', unsafe_allow_html=True)
-            render_top_posts(df, sentiment_label="Positive")
-        with col_neg:
-            st.markdown('<div class="section-header">Top 10 Negative Posts</div>', unsafe_allow_html=True)
-            render_top_posts(df, sentiment_label="Negative")
+        with st.container():
+            col_pos, col_neg = st.columns(2)
+            with col_pos:
+                st.markdown('<div class="section-header">Top 10 Positive Posts</div>', unsafe_allow_html=True)
+                render_top_posts(df, sentiment_label="Positive")
+            with col_neg:
+                st.markdown('<div class="section-header">Top 10 Negative Posts</div>', unsafe_allow_html=True)
+                render_top_posts(df, sentiment_label="Negative")
 
         st.markdown("### All Posts")
         st.dataframe(
