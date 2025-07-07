@@ -59,18 +59,16 @@ with st.sidebar:
     limit = st.slider("Number of Reddit posts to analyze", 10, 500, 100, step=10)
     analyze_btn = st.button("Analyze")
 
-# Run analysis and persist results in session state
 if analyze_btn:
     with st.spinner("Collecting and analyzing posts..."):
         df = run_pipeline(topic, limit)
         st.session_state['last_df'] = df
+        st.session_state['show_results'] = True
+        st.experimental_rerun()
 
-# Display results from session state if available
-if 'last_df' in st.session_state and st.session_state['last_df'] is not None and not analyze_btn:
-    df = st.session_state['last_df']
-    if df.empty:
-        st.error("No posts found for your query. Try a different topic.")
-    else:
+if st.session_state.get('show_results', False):
+    df = st.session_state.get('last_df')
+    if df is not None and not df.empty:
         total_posts = len(df)
         avg_sentiment = df['sentiment_score'].mean()
         avg_sentiment_display = f"{avg_sentiment:+.2f}"
@@ -119,5 +117,7 @@ if 'last_df' in st.session_state and st.session_state['last_df'] is not None and
             file_name=f"{topic}_reddit_sentiment.csv",
             mime="text/csv"
         )
-elif not analyze_btn:
+    elif df is not None and df.empty:
+        st.error("No posts found for your query. Try a different topic.")
+else:
     st.info("Enter a topic and click Analyze to get started.")
