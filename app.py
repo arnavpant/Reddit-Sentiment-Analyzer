@@ -64,7 +64,7 @@ if analyze_btn:
         df = run_pipeline(topic, limit)
         st.session_state['last_df'] = df
         st.session_state['show_results'] = True
-        st.experimental_rerun()
+        st.rerun()
 
 if st.session_state.get('show_results', False):
     df = st.session_state.get('last_df')
