@@ -11,16 +11,15 @@ def get_reddit_instance():
         user_agent=REDDIT_USER_AGENT
     )
 
-def collect_posts(subreddit, query, limit=100):
+def collect_posts(query, limit=100):
     reddit = get_reddit_instance()
-    subreddit_obj = reddit.subreddit(subreddit)
     posts = []
-    for post in subreddit_obj.search(query, sort='new', limit=limit):
+    for post in reddit.subreddit("all").search(query, sort='relevance', time_filter='month', limit=limit):
         posts.append({
             'post_id': post.id,
             'title': post.title,
             'content': post.selftext,
-            'subreddit': subreddit,
+            'subreddit': post.subreddit.display_name,
             'score': getattr(post, 'score', 0),
             'num_comments': getattr(post, 'num_comments', 0),
             'timestamp': pd.to_datetime(post.created_utc, unit='s'),

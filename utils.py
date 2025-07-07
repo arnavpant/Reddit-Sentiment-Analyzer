@@ -1,7 +1,6 @@
 # utils.py
 
 def get_sentiment_feeling(score):
-    # Positive
     if 0.0 <= score < 0.1:
         return "This is like stale chips—couldn’t care less."
     elif 0.1 <= score < 0.2:
@@ -22,7 +21,6 @@ def get_sentiment_feeling(score):
         return "You just won concert tickets on the radio."
     elif 0.9 <= score <= 1.0:
         return "You woke up and it’s Saturday. Forever. Pure joy."
-    # Negative
     elif -0.1 <= score < 0.0:
         return "You dropped your toast and it landed butter-side down."
     elif -0.2 <= score < -0.1:
