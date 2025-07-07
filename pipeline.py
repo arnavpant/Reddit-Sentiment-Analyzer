@@ -5,7 +5,7 @@ from data_processor import clean_text, save_to_db, setup_db, get_existing_post_i
 from sentiment_analyzer import analyze_sentiment
 import pandas as pd
 
-def run_pipeline(topic, subreddit, limit=100):
+def run_pipeline(topic, limit=100):
     setup_db()
     df = collect_posts_global(topic, limit)
     if df.empty:

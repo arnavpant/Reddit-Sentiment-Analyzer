@@ -70,9 +70,10 @@ def render_top_posts(df, sentiment_label="Positive", top_n=10):
     else:
         posts = posts.sort_values("sentiment_score", ascending=True).head(top_n)
     for _, row in posts.iterrows():
-        post_url = f"https://reddit.com/{row['post_id']}" if 'post_id' in row else "#"
+        post_url = f"https://reddit.com/{row['post_id']}"
         st.markdown(
-            f'<div class="post-card"><a href="{post_url}" target="_blank">{row["title"]}</a></div>',
+            f'<div class="post-card"><a href="{post_url}" target="_blank">{row["title"]}</a> <span style="color:#888;font-size:0.9em;">[r/{row["subreddit"]}]</span></div>',
             unsafe_allow_html=True
         )
+
 

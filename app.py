@@ -53,13 +53,12 @@ st.title("AI-Powered Sentiment Analysis for Social Movements")
 with st.sidebar:
     st.header("Configure Analysis")
     topic = st.text_input("Enter topic or hashtag", value="climate change")
-    subreddit = st.selectbox("Choose subreddit", ["politics", "news", "worldnews"])
     limit = st.slider("Number of posts to analyze", 10, 500, 100, step=10)
     analyze_btn = st.button("Analyze")
 
 if analyze_btn:
     with st.spinner("Collecting and analyzing posts..."):
-        df = run_pipeline(topic, subreddit, limit)
+        df = run_pipeline(topic, limit)
         if df.empty:
             st.error("No posts found for your query. Try a different topic or subreddit.")
         else:
@@ -101,12 +100,12 @@ if analyze_btn:
                 render_top_posts(df, sentiment_label="Negative")
 
             st.markdown("### All Posts")
-            st.dataframe(df[["title", "sentiment_label", "sentiment_score", "timestamp"]], use_container_width=True)
+            st.dataframe(df[["title", "subreddit", "sentiment_label", "sentiment_score", "timestamp"]], use_container_width=True)
 
             st.download_button(
                 label="Download Results as CSV",
                 data=df.to_csv(index=False).encode('utf-8'),
-                file_name=f"{topic}_{subreddit}_sentiment.csv",
+                file_name=f"{topic}_sentiment.csv",
                 mime="text/csv"
             )
 else:
